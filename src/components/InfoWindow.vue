@@ -32,12 +32,13 @@ export default defineComponent({
       type: Object as PropType<google.maps.InfoWindowOptions>,
       default: () => ({}),
     },
-    modelValue: {
+    opened: {
       type: Boolean,
+      default: false,
     },
   },
 
-  emits: [...infoWindowEvents, "update:modelValue"],
+  emits: [...infoWindowEvents, "update:opened"],
 
   setup(props, { slots, emit, expose }) {
     const infoWindow = ref<google.maps.InfoWindow>();
@@ -47,14 +48,10 @@ export default defineComponent({
     const api = inject(apiSymbol, ref());
     const anchor = inject(markerSymbol, ref());
     let anchorClickListener: google.maps.MapsEventListener;
-    // eslint-disable-next-line vue/no-setup-props-destructure
-    let internalVal = props.modelValue; // Doesn't need to be reactive
-
     const hasSlotContent = computed(() => slots.default?.().some((vnode) => vnode.type !== Comment));
 
     const updateVModel = (val: boolean) => {
-      internalVal = val;
-      emit("update:modelValue", val);
+      emit("update:opened", val);
     };
 
     const open = (opts?: google.maps.InfoWindowOpenOptions) => {
@@ -99,7 +96,7 @@ export default defineComponent({
                 });
               }
 
-              if (!anchor.value || internalVal) {
+              if (!anchor.value || props.opened) {
                 open();
               }
 
@@ -116,10 +113,12 @@ export default defineComponent({
       );
 
       watch(
-        () => props.modelValue,
-        (val) => {
-          if (val !== internalVal) {
-            val ? open() : close();
+        () => props.opened,
+        (newVal) => {
+          if (newVal) {
+            infoWindow.value?.open(map.value, anchor.value);
+          } else {
+            infoWindow.value?.close();
           }
         }
       );
