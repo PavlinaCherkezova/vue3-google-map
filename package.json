@@ -39,11 +39,11 @@
   },
   "scripts": {
     "dev": "vite",
-    "prepare": "pnpm run build",
+    "prepare": "npm run build",
     "clean": "rimraf dist/**/*",
     "lint": "npx eslint --ext .ts,.vue src dev docs --fix",
     "build:umd": "node ./scripts/build-umd.js",
-    "build": "pnpm clean && vue-tsc --declaration --emitDeclarationOnly --project tsconfig.build.json && vite build && pnpm build:umd",
+    "build": "npm run clean && vue-tsc --declaration --emitDeclarationOnly --project tsconfig.build.json && vite build && npm run build:umd",
     "docs": "vitepress dev docs",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",

@@ -17,16 +17,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.17.0
+          cache: 'npm'
 
       - name: Install dependencies 👨🏻‍💻
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-          run_install: |
-              args: [--frozen-lockfile, --strict-peer-dependencies]
+        run: npm ci
 
       - name: Build library 🛠
-        run: pnpm build
+        run: npm run build
 
       - name: Publish package 📦
         uses: JS-DevTools/npm-publish@v1
