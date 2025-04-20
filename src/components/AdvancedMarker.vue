@@ -1,9 +1,11 @@
 <template>
-  <div v-if="hasSlotContent" class="advanced-marker-wrapper">
-    <div ref="markerRef" v-bind="$attrs">
-      <slot />
-    </div>
+  <div ref="markerContainer">
+    <slot name="markerSlot">
+      <div class="advanced-marker-wrapper"></div>
+    </slot>
   </div>
+
+  <slot />
 </template>
 
 <script lang="ts">
@@ -19,6 +21,8 @@ import {
   ref,
   watch,
   Comment,
+  onMounted,
+  nextTick,
 } from "vue";
 import { markerSymbol, apiSymbol, mapSymbol, markerClusterSymbol } from "../shared/index";
 import equal from "fast-deep-equal";
@@ -39,8 +43,12 @@ export default defineComponent({
   },
   emits: markerEvents,
   setup(props, { emit, expose, slots }) {
+    const markerContainer = ref<HTMLElement>();
     const markerRef = ref<HTMLElement>();
-    const hasSlotContent = computed(() => slots.default?.().some((vnode) => vnode.type !== Comment));
+
+    const hasMarkerSlot = computed(
+      () => !!slots.markerSlot && slots.markerSlot?.().some((vnode) => vnode.type !== Comment)
+    );
 
     const options = toRef(props, "options");
     const pinOptions = toRef(props, "pinOptions");
@@ -55,6 +63,13 @@ export default defineComponent({
       () => !!(markerCluster.value && api.value && marker.value instanceof google.maps.marker.AdvancedMarkerElement)
     );
 
+    onMounted(async () => {
+      await nextTick();
+      if (markerContainer.value && markerContainer.value.firstElementChild) {
+        markerRef.value = markerContainer.value.firstElementChild as HTMLElement;
+      }
+    });
+
     watch(
       [map, options, pinOptions],
       async (_, [oldMap, oldOptions, oldPinOptions]) => {
@@ -67,13 +82,12 @@ export default defineComponent({
 
         if (marker.value) {
           const { map: _, content, ...otherOptions } = options.value;
-
           Object.assign(marker.value, {
-            content: hasSlotContent.value
+            content: hasMarkerSlot.value
               ? markerRef.value
               : pinOptions.value
-                ? new PinElement(pinOptions.value).element
-                : content,
+              ? new PinElement(pinOptions.value).element
+              : content,
             ...otherOptions,
           });
 
@@ -82,7 +96,7 @@ export default defineComponent({
             markerCluster.value?.addMarker(marker.value);
           }
         } else {
-          if (hasSlotContent.value) {
+          if (hasMarkerSlot.value) {
             options.value.content = markerRef.value;
           } else if (pinOptions.value) {
             options.value.content = new PinElement(pinOptions.value).element;
@@ -122,7 +136,7 @@ export default defineComponent({
 
     expose({ marker });
 
-    return { hasSlotContent, markerRef };
+    return { hasMarkerSlot, markerRef, markerContainer };
   },
 });
 </script>
