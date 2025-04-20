@@ -70,6 +70,10 @@ export default defineComponent({
       required: false,
       default: undefined,
     },
+    colorScheme: {
+      type: String as PropType<keyof typeof google.maps.ColorScheme>,
+      required: false,
+    },
     controlSize: {
       type: Number,
       required: false,
@@ -224,6 +228,15 @@ export default defineComponent({
       type: String as PropType<IControlPosition>,
       required: false,
     },
+    cameraControl: {
+      type: Boolean,
+      required: false,
+      default: undefined,
+    },
+    cameraControlPosition: {
+      type: String as PropType<IControlPosition>,
+      required: false,
+    },
     nonce: {
       type: String,
       default: "",
@@ -265,6 +278,7 @@ export default defineComponent({
         rotateControlOptions: createControlOptionsWithPosition(props.rotateControlPosition),
         streetViewControlOptions: createControlOptionsWithPosition(props.streetViewControlPosition),
         fullscreenControlOptions: createControlOptionsWithPosition(props.fullscreenControlPosition),
+        cameraControlOptions: createControlOptionsWithPosition(props.cameraControlPosition),
         disableDefaultUI: props.disableDefaultUi,
       };
 
